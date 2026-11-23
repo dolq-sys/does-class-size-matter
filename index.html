@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Does Class Size Matter? · Reading Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1d3557; --navy2:#2b4a73; --ink:#1f2933; --muted:#5f6b7a; --line:#dde3ea; --bg:#f5f7fa; --card:#fff;
+  --ok:#2e9d5b; --okbg:#e7f6ec; --bad:#d64545; --badbg:#fdecec; --hl:#ffef9a; --ev:#c6efd5; --accent:#e9a23b; --blue:#2f6fde;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color-scheme:light}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+
+/* ---------- top bar ---------- */
+#top{height:58px;background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:0 18px;position:relative;z-index:5}
+#top h1{font-size:18px;margin:0;font-weight:700;white-space:nowrap}
+.tabs{display:flex;gap:6px;margin-left:10px}
+.tab{background:transparent;border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:7px}
+.tab.on{background:#fff;color:var(--navy);border-color:#fff}
+.tab:disabled{opacity:.5;cursor:not-allowed}
+.tab svg{width:14px;height:14px}
+.spacer{flex:1}
+.tool{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:7px 12px;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+.tool.on{background:var(--hl);color:#4a3b00;border-color:var(--hl)}
+.tool svg{width:16px;height:16px}
+#who{font-size:13.5px;opacity:.9;white-space:nowrap}
+#timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:18px;background:#fff;color:var(--navy);border-radius:8px;padding:5px 12px;display:flex;align-items:center;gap:7px}
+#timer.low{background:var(--bad);color:#fff}
+#timer svg{width:18px;height:18px}
+
+/* ---------- layout ---------- */
+#main{display:flex;height:calc(100vh - 58px)}
+#passWrap{width:52%;overflow-y:auto;background:#fff;padding:26px 34px 60px}
+#divider{width:8px;background:var(--line);cursor:col-resize;position:relative;flex:none}
+#divider::after{content:"";position:absolute;left:2px;top:50%;width:4px;height:40px;margin-top:-20px;border-radius:3px;background:#a9b4c2}
+#taskWrap{flex:1;overflow-y:auto;padding:22px 28px 80px}
+
+/* ---------- passage ---------- */
+#passage h2{text-align:center;font-size:26px;margin:4px 0 22px;color:var(--navy)}
+.sec{margin-bottom:22px;scroll-margin-top:20px}
+.sec .lt{display:inline-flex;width:30px;height:30px;border-radius:8px;background:var(--navy);color:#fff;align-items:center;justify-content:center;font-weight:700;margin-bottom:8px}
+#passage p{font-size:17px;line-height:1.78;margin:0 0 14px}
+#passage.hlmode{cursor:text}
+mark.hl{background:var(--hl);color:inherit;padding:0;margin:0;border-radius:0}
+.vw.found{background:#dce8ff}
+body.testing .vw.found{background:none}
+.target{font-size:24px;font-weight:700;color:var(--navy);background:#e8eefc;border-radius:10px;padding:10px 16px;display:inline-block;margin:4px 0 8px}
+.card.scanCard{border:2px solid var(--blue)}
+.scanCard .pulse{display:inline-flex;align-items:center;gap:8px;color:var(--blue);font-weight:600;font-size:14px}
+.scanCard .pulse i{width:10px;height:10px;border-radius:50%;background:var(--blue);animation:pl 1.2s infinite}
+@keyframes pl{50%{opacity:.25}}
+.waiting{color:var(--muted);font-size:14px;margin:6px 0 0}
+#passage.hlmode mark.hl{cursor:pointer}
+.ev.on{background:var(--ev);box-shadow:0 2px 0 var(--ok);transition:background .3s}
+.ev.on mark.hl{background:#d9f0a0}
+body.testing .ev.on{background:none;box-shadow:none}
+
+/* ---------- scaffold ---------- */
+.stepper{display:flex;gap:6px;margin-bottom:18px}
+.step{flex:1;min-width:0;border:2px solid var(--line);background:#fff;border-radius:12px;padding:9px 11px;text-align:left;color:var(--muted)}
+.step b{display:block;font-size:12.5px;line-height:1.3;color:var(--ink)}
+table.cmp .val{border:1.5px solid var(--ok);background:var(--okbg);color:#1d6b3e;font-weight:600;border-radius:8px;padding:8px}
+.step small{font-size:12px}
+.step.on{border-color:var(--navy);box-shadow:0 2px 0 var(--navy)}
+.step.done{border-color:var(--ok);background:var(--okbg)}
+.step .bar{height:5px;border-radius:3px;background:#e8edf2;margin-top:6px;overflow:hidden}
+.step .bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .4s}
+.partHead{display:flex;gap:16px;align-items:center;margin-bottom:14px}
+.partHead svg{flex:none;width:64px;height:64px}
+.partHead h3{margin:0 0 4px;font-size:21px;color:var(--navy)}
+.partHead p{margin:0;color:var(--muted);font-size:15px;line-height:1.5}
+.tip{background:#fff8e6;border:1px solid #f1d9a6;border-radius:12px;padding:11px 14px;font-size:14.5px;line-height:1.55;margin-bottom:16px}
+.tip b{color:#8a5a00}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.card.solved{border-color:#a6dcb9}
+.card .qn{font-size:12.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.card .qn .sl{background:var(--navy);color:#fff;border-radius:6px;padding:1px 7px;letter-spacing:0}
+.card .prompt{font-size:16px;line-height:1.6;margin-bottom:12px}
+.card .prompt b{background:#e8eefc;color:var(--navy);padding:0 4px;border-radius:4px}
+.card blockquote{margin:0 0 12px;padding:8px 14px;border-left:4px solid var(--navy2);background:#f3f6fa;font-size:15.5px;line-height:1.6;border-radius:0 8px 8px 0}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opts.one{grid-template-columns:1fr}
+.opts.three{grid-template-columns:repeat(3,1fr)}
+.opt{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-size:15px;text-align:left;line-height:1.4;color:var(--ink);transition:.15s}
+.opt:hover:not(:disabled){border-color:var(--navy2);background:#f4f7fb}
+.opt.wrong{border-color:var(--bad);background:var(--badbg);color:#9b2c2c;text-decoration:line-through}
+.opt.right{border-color:var(--ok);background:var(--okbg);color:#1d6b3e;font-weight:600}
+.opt:disabled{cursor:default}
+.opt:disabled:not(.right):not(.wrong){opacity:.55}
+.hint{margin-top:10px;background:var(--badbg);color:#8d2a2a;border-radius:10px;padding:9px 12px;font-size:14.5px;line-height:1.5;display:flex;gap:8px}
+.hint svg,.expl svg{flex:none;width:18px;height:18px;margin-top:2px}
+.expl{margin-top:10px;background:var(--okbg);color:#1b5a35;border-radius:10px;padding:10px 12px;font-size:14.5px;line-height:1.55;display:flex;gap:8px}
+.expl .evbtn{margin-left:auto;flex:none;align-self:flex-start;border:1px solid #8fcfa8;background:#fff;color:#1d6b3e;border-radius:7px;padding:3px 9px;font-size:12.5px;font-weight:600}
+.wcard{margin-top:10px;border:1.5px dashed #8fcfa8;border-radius:12px;padding:12px 14px;background:#fbfffc}
+.wcard .w{font-size:20px;font-weight:700;color:var(--navy)}
+.wcard .ipa{color:var(--muted);font-size:15px;margin-left:6px}
+.wcard .pos{font-size:13px;color:#fff;background:var(--navy2);border-radius:5px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+.wcard .vi{margin-top:4px;font-size:16px}
+.wcard .note{margin-top:8px;font-size:14px;color:#8a5a00;display:flex;gap:6px;align-items:center}
+.wcard .note svg{width:17px;height:17px}
+.shake{animation:sh .38s}
+@keyframes sh{20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+table.cmp{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+table.cmp th,table.cmp td{border-bottom:1px solid var(--line);padding:10px;font-size:14.5px;vertical-align:top}
+table.cmp th{background:var(--navy);color:#fff;font-weight:600}
+table.cmp td:first-child{font-weight:600;color:var(--navy);background:#f3f6fa;width:22%}
+table.cmp select{width:100%;font-family:inherit;font-size:14.5px;padding:8px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+table.cmp td.ok select{border-color:var(--ok);background:var(--okbg);color:#1d6b3e;font-weight:600}
+table.cmp td.no select{border-color:var(--bad);background:var(--badbg)}
+table.cmp .cexp{font-size:13px;line-height:1.45;margin-top:6px;color:#1b5a35}
+table.cmp .chint{font-size:13px;line-height:1.45;margin-top:6px;color:#8d2a2a}
+.navRow{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+.btn{border:none;border-radius:10px;padding:11px 20px;font-size:15px;font-weight:700;background:var(--navy);color:#fff;display:inline-flex;gap:8px;align-items:center}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.btn.green{background:var(--ok)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn svg{width:18px;height:18px}
+.doneBox{text-align:center;padding:26px 20px;background:#fff;border:1px solid var(--line);border-radius:16px}
+.doneBox h3{color:var(--navy);font-size:22px;margin:10px 0 6px}
+.doneBox p{color:var(--muted);line-height:1.6;margin:6px 0 16px}
+.stat{display:inline-block;margin:0 10px 12px;text-align:center}
+.stat b{display:block;font-size:26px;color:var(--navy)}
+.stat span{font-size:13px;color:var(--muted)}
+
+/* ---------- test ---------- */
+.tq h3{font-size:18px;margin:6px 0 8px}
+.tq .intro p{margin:4px 0;font-size:15.5px;line-height:1.55}
+table.grid{border-collapse:collapse;width:100%;margin:14px 0 30px;background:#fff}
+table.grid th,table.grid td{border:1px solid var(--line);padding:9px 8px;font-size:15px}
+table.grid th{background:#f3f6fa}
+table.grid td.l,table.grid th.l{text-align:center;width:40px;padding:0}
+table.grid td.s{line-height:1.45}
+table.grid td.s b{margin-right:4px}
+.rad{width:24px;height:24px;border-radius:50%;border:2px solid #b8c2ce;background:#fff;display:inline-block;vertical-align:middle;padding:0}
+.rad:hover{border-color:var(--navy2)}
+.rad.sel{background:var(--navy2);border-color:var(--navy2);box-shadow:inset 0 0 0 4px #fff}
+tr.answered td.s{color:var(--ink)}
+.submitBar{position:sticky;bottom:-80px;background:linear-gradient(transparent,var(--bg) 30%);padding:18px 0 10px;display:flex;justify-content:space-between;align-items:center}
+.submitBar span{color:var(--muted);font-size:14.5px}
+.res{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+.res .big{font-size:46px;font-weight:700;color:var(--navy)}
+.res .big small{font-size:22px;color:var(--muted)}
+.resList{margin-top:14px;border-top:1px solid var(--line)}
+.resRow{display:flex;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line);align-items:flex-start;font-size:15px;line-height:1.45}
+.resRow .n{font-weight:700;width:28px;flex:none}
+.resRow .st{flex:1}
+.resRow .a{flex:none;width:96px;text-align:center;font-size:13.5px;color:var(--muted)}
+.resRow .ic{flex:none;width:24px;height:24px}
+.resRow.r .ic{color:var(--ok)} .resRow.w .ic{color:var(--bad)}
+.resRow.w{background:#fff8f8}
+.hist{font-size:14px;color:var(--muted);margin-top:14px}
+.hist span{display:inline-block;background:#eef2f7;border-radius:7px;padding:3px 9px;margin:3px 4px 0 0;color:var(--ink)}
+
+/* ---------- overlays ---------- */
+.ov{position:fixed;inset:0;background:rgba(17,30,50,.62);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+.box{background:#fff;border-radius:18px;max-width:640px;width:100%;padding:28px 30px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.box h2{margin:0 0 6px;color:var(--navy)}
+.box p{line-height:1.6;color:#3b4652}
+.field{margin:12px 0}
+.field label{display:block;font-weight:600;font-size:14px;margin-bottom:5px}
+.field input{width:100%;font-family:inherit;font-size:16px;padding:10px 12px;border-radius:10px;border:1.5px solid var(--line)}
+.field input:focus{outline:none;border-color:var(--navy2)}
+.parts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.parts div{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.5}
+.parts b{color:var(--navy);display:block;margin-bottom:3px;font-size:15px}
+#fsWarn .box{text-align:center;border-top:6px solid var(--bad)}
+#fsWarn h2{color:var(--bad)}
+.err{color:var(--bad);font-size:14px;min-height:18px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:10px;font-size:14.5px;z-index:60;opacity:0;transition:.3s;pointer-events:none}
+#toast.show{opacity:1}
+@media (max-width:860px){#main{flex-direction:column;height:auto}#passWrap{width:100%!important;max-height:52vh}#divider{display:none}.opts{grid-template-columns:1fr}#top{flex-wrap:wrap;height:auto;padding:8px 12px}#main{height:auto}}
+</style>
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<div id="top">
+  <h1>Does Class Size Matter?</h1>
+  <div class="tabs">
+    <button class="tab on" id="tabS">Part 1 · Understand the text</button>
+    <button class="tab" id="tabT" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Part 2 · 25-minute test</button>
+  </div>
+  <div class="spacer"></div>
+  <button class="tool" id="hlBtn" title="Turn on the highlighter, then select words in the passage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l-6 6v3h9l3-3"/><path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>Highlight</button>
+  <button class="tool" id="hlClear" title="Clear all highlights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Clear</button>
+  <div id="timer" class="hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg><span id="tLeft">25:00</span></div>
+  <div id="who"></div>
+</div>
+
+<!-- ============ MAIN ============ -->
+<div id="main">
+  <div id="passWrap">
+    <div id="passage">
+      <h2>Does Class Size Matter?</h2>
+      <div class="sec" id="secA"><div class="lt">A</div>
+        <p>Of all the ideas for improving education, few are as simple or attractive as reducing the number of pupils per teacher. <span class="ev" data-ev="e_a3">Unlike competing proposals for reform, class-size reductions rarely <span class="vw" data-w="v1">elicit</span> huge outcries or involve structural change.</span> <span class="ev" data-ev="e_a2">The testing of educators, by contrast, generally arouses the anger of unions.</span> Similarly, establishing special “charter” schools involves privileging some schools over others, with the credits provided usually coming out of the budgets of struggling local schools. <span class="ev" data-ev="e_a4">With its uncomplicated appeal, class-size reduction in the U.S. has lately gone from being a subject of primary academic interest to a policy <span class="vw" data-w="v2">juggernaut</span>,</span> <span class="ev" data-ev="e_a1">with over twenty states aiming at decreasing class sizes.</span></p>
+      </div>
+      <div class="sec" id="secB"><div class="lt">B</div>
+        <p>Do small classes improve school achievement? To answer this, investigators have attempted to analyse existing data, such as records at the U.S. Department of Education. <span class="ev" data-ev="e_b1">These reveal that there were steep drops in pupil-teacher ratios between 1969 and 1997, but no significant gains in academic performance.</span></p>
+        <p>But do these findings mean that class size makes no difference? Not necessarily. For instance, schools strive for more than just high test scores; they also usually try to keep their dropout rates low. And, indeed, the dropout rate for older students fell considerably over that period. <span class="ev" data-ev="e_b2">Because dropouts generally come from the low end of the achievement distribution, a reduction in the dropout rate could be expected to pull down average test scores.</span></p>
+        <p><span class="ev" data-ev="e_b3">Another reason for discounting those data is the difficulty of ensuring <span class="vw" data-w="v3">a level playing field</span>.</span> In a perfect world, U.S. students would all come from well-off families, with two highly educated, English-speaking parents, who are involved in their children’s schooling. Teachers would all be creative and have complete mastery of the subject matter. The reality is very different.</p>
+      </div>
+      <div class="sec" id="secC"><div class="lt">C</div>
+        <p><span class="ev" data-ev="e_c1">Over the past 35 years, some studies of existing data have produced evidence that smaller classes benefit students, but most of these studies were poorly designed.</span> <span class="ev" data-ev="e_c2">The exception was the Tennessee study called Project STAR (Student Teacher Achievement Ratio). Frederick Mosteller of Harvard University has called it “one of the greatest experiments in education in the United States history.”</span></p>
+        <p><span class="ev" data-ev="e_c3">Students entering kindergarten were randomly assigned to one of three kinds of classes: a small class of 13 to 17 students, a regular-size class of 22 to 26, or a regular-size class with both a teacher and a full-time teacher’s aide.</span></p>
+        <p><span class="ev" data-ev="e_c4">The students remained in whatever category they had been assigned to throughout the third grade, after which they joined a regular classroom in the fourth.</span> To ensure that teaching quality did not differ, teachers were randomly assigned to small and regular-size classrooms. <span class="ev" data-ev="e_c5">Few teachers received any special training for working with small classes, and there were no new curricular materials.</span></p>
+      </div>
+      <div class="sec" id="secD"><div class="lt">D</div>
+        <p>At the end of STAR, researchers analysed the data. <span class="ev" data-ev="e_d0">Jeremy Finn of New York University and Charles Achilles of Eastern Michigan University found evidence for “an array of benefits of small classes.”</span> They calculated that students in smaller classes were outperforming their counterparts in regular-size classes by the first grade and that this advantage persisted even after students returned to larger classes. They also found that the effect was stronger for black and Hispanic minority groups – a significant finding for policy-makers.</p>
+        <p><span class="ev" data-ev="e_d2">Eric Hanushek of Stanford, however, criticises some of STAR’s key conclusions.</span> He argues that STAR does not prove that gains persist long after students return to regular classes. It was debatable how much later improvement stemmed from other factors, such as a supportive home. Nor does he accept that the benefits accumulate, with participants widening the gap with their peers in larger classes year by year.</p>
+        <p><span class="ev" data-ev="e_d3">Hanushek and others have also shown that, during the study, too many children moved from regular to small classes, probably because school personnel <span class="vw" data-w="v4">caved in to</span> parent demands.</span> And Hanushek also asserts that STAR failed to ensure good randomisation of teacher and student assignments. <span class="ev" data-ev="e_d4">However, these points do not <span class="vw" data-w="v5">undermine</span> STAR’s basic findings.</span></p>
+      </div>
+      <div class="sec" id="secE"><div class="lt">E</div>
+        <p><span class="ev" data-ev="e_e4">The largest public class-size reduction programme so far, California’s, stands more as a warning than as worthy of <span class="vw" data-w="v6">emulation</span>.</span> <span class="ev" data-ev="e_e1">That state is trying to reduce classes in kindergarten through grade three, despite a shortage of teachers that is most acute in low-income areas.</span></p>
+        <p><span class="ev" data-ev="e_e5">This is <span class="vw" data-w="v7">exacerbating</span> the <span class="vw" data-w="v8">disparity</span> in resources available to rich and poor schools in California, because more affluent areas can attract the best teachers.</span> <span class="ev" data-ev="e_e2">Indeed, some of the extra teachers needed are being recruited from the poorer schools.</span> <span class="ev" data-ev="e_e3">Researchers found a statistically significant achievement advantage in reading, writing, and mathematics for students in classes that had been reduced to 20.</span> What is more, the effect did not vary for students of different backgrounds.</p>
+      </div>
+      <div class="sec" id="secF"><div class="lt">F</div>
+        <p><span class="ev" data-ev="e_f5">Wisconsin’s Student Achievement Guarantee in Education (SAGE) was a five-year <span class="vw" data-w="v9">pilot study</span> to do some of the groundwork for a major project.</span> <span class="ev" data-ev="e_f1">Class sizes were reduced in only 14 schools,</span> but it was noteworthy for targeting schools at which 30% of the students were below poverty level, compared with California’s across-the-board approach. <span class="ev" data-ev="e_f3">SAGE lowered the average pupil-teacher ratio in kindergarten through third grade to 12–15:1, from 21–25:1.</span> Analysts have studied the results of first-grade students in these schools and similar first-grade students elsewhere and found the results accord with those from STAR.</p>
+        <p>STAR and SAGE have made it hard to argue against reducing class sizes. <span class="ev" data-ev="e_f4">But the California initiative shows that reductions made with too little forethought can yield <span class="vw" data-w="v10">minuscule</span> gains.</span> Administrators need solid information before they can make sensible policy decisions.</p>
+      </div>
+    </div>
+  </div>
+  <div id="divider" title="Drag to resize"></div>
+  <div id="taskWrap">
+    <div id="scaffold"></div>
+    <div id="test" class="hidden"></div>
+  </div>
+</div>
+
+<!-- ============ START ============ -->
+<div class="ov" id="startOv">
+  <div class="box">
+    <svg viewBox="0 0 560 120" width="100%" style="display:block;margin-bottom:10px" aria-hidden="true">
+      <rect x="0" y="0" width="560" height="120" rx="14" fill="#eef3f9"/>
+      <rect x="22" y="18" width="150" height="70" rx="6" fill="#2b4a73"/>
+      <line x1="34" y1="38" x2="120" y2="38" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+      <line x1="34" y1="52" x2="150" y2="52" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+      <line x1="34" y1="66" x2="100" y2="66" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+      <g fill="#1d3557"><circle cx="205" cy="48" r="11"/><rect x="194" y="61" width="22" height="30" rx="8"/></g>
+      <g id="kid"><circle cx="0" cy="0" r="8" fill="#e9a23b"/><rect x="-9" y="10" width="18" height="18" rx="6" fill="#e9a23b"/><rect x="-16" y="28" width="32" height="6" rx="2" fill="#9aa8b8"/></g>
+      <use href="#kid" x="270" y="56"/><use href="#kid" x="318" y="56"/><use href="#kid" x="366" y="56"/>
+      <g opacity=".35"><use href="#kid" x="430" y="56"/><use href="#kid" x="462" y="56"/><use href="#kid" x="494" y="56"/><use href="#kid" x="526" y="56"/><use href="#kid" x="446" y="22"/><use href="#kid" x="478" y="22"/><use href="#kid" x="510" y="22"/></g>
+      <text x="318" y="112" text-anchor="middle" font-size="12" fill="#5f6b7a" font-family="inherit">small class</text>
+      <text x="478" y="112" text-anchor="middle" font-size="12" fill="#5f6b7a" font-family="inherit">regular class</text>
+    </svg>
+    <h2>Does Class Size Matter? · IELTS Reading</h2>
+    <div class="parts">
+      <div><b>Part 1 · Understand the text</b>Key words, main ideas of sections A–F, types of information, comparing the 3 projects, True/False/Not Given. You see right/wrong after each answer, with a hint when you are wrong.</div>
+      <div><b>Part 2 · 25-minute test</b>Do Questions 27–40 like the real exam. You see your score and which answers are right/wrong only after you submit. You can try as many times as you like.</div>
+    </div>
+    <div class="field"><label for="inName">Full name</label><input id="inName" autocomplete="name"></div>
+    <div class="field"><label for="inClass">Class</label><input id="inClass"></div>
+    <div class="err" id="startErr"></div>
+    <p style="font-size:14px;margin:6px 0 14px">This task runs in full-screen mode. Thầy Độ records how many times, and for how long, you leave the task screen.</p>
+    <button class="btn" id="startBtn">Start<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+  </div>
+</div>
+
+<!-- ============ FULLSCREEN WARNING ============ -->
+<div class="ov hidden" id="fsWarn">
+  <div class="box">
+    <svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><path d="M32 6 60 56H4z" fill="#fdecec" stroke="#d64545" stroke-width="4" stroke-linejoin="round"/><rect x="29" y="22" width="6" height="18" rx="3" fill="#d64545"/><circle cx="32" cy="47" r="3.5" fill="#d64545"/></svg>
+    <h2>You have left the task screen</h2>
+    <p><b>Thầy Độ đề nghị không thoát màn hình và tiếp tục làm bài.</b></p>
+    <p id="fsCount" style="font-size:14px"></p>
+    <button class="btn" id="fsBack">Return to the task (full screen)</button>
+  </div>
+</div>
+
+<!-- ============ CONFIRM ============ -->
+<div class="ov hidden" id="confirmOv">
+  <div class="box">
+    <h2 id="cfTitle"></h2>
+    <p id="cfText"></p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn ghost" id="cfNo">Go back</button>
+      <button class="btn" id="cfYes">Yes</button>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ===================== CONFIG ===================== */
+const CONFIG = {
+  // Dán URL Web App của Apps Script vào đây (kết thúc bằng /exec)
+  SCRIPT_URL: 'PASTE_YOUR_WEB_APP_URL_HERE',
+  LESSON: 'Reading – Does Class Size Matter? (Q27–40)',
+  TEST_MINUTES: 25
+};
+const SALT="csm27-cm2ijg";
+const DATA={"vocab":[{"id":"v1","word":"elicit","ipa":"/ɪˈlɪsɪt/","pos":"v","ev":"e_a3","sent":"Unlike competing proposals for reform, class-size reductions rarely <b>elicit</b> huge outcries or involve structural change.","opts":["gây ra (phản ứng)","ngăn chặn (phản ứng)","che giấu (phản ứng)","giảm bớt (phản ứng)"],"hint":"Read on: \"huge outcries\" (strong protests). Class-size cuts rarely ____ strong protests."},{"id":"v2","word":"juggernaut","ipa":"/ˈdʒʌɡənɔːt/","pos":"n","ev":"e_a4","sent":"Class-size reduction has lately gone from being a subject of primary academic interest to a policy <b>juggernaut</b>, with over twenty states aiming at decreasing class sizes.","opts":["xu hướng khó cản lại","ý tưởng bị bỏ quên","cuộc tranh luận nhỏ","thí nghiệm tốn kém"],"hint":"\"over twenty states\" are following this policy. Is it growing stronger or weaker?"},{"id":"v3","word":"a level playing field","ipa":"/ˌlevl ˈpleɪɪŋ fiːld/","pos":"n","ev":"e_b3","sent":"Another reason for discounting those data is the difficulty of ensuring <b>a level playing field</b>. In a perfect world, U.S. students would all come from well-off families…","opts":["điều kiện ngang bằng nhau","kết quả thi rất cao","lớp học đông học sinh","chương trình học mới"],"hint":"The next sentence describes a \"perfect world\" where all students have the same conditions."},{"id":"v4","word":"cave in to","ipa":"/keɪv ɪn tə/","pos":"phr v","ev":"e_d3","sent":"Too many children moved from regular to small classes, probably because school personnel <b>caved in to</b> parent demands.","opts":["nhượng bộ, chiều theo","phản đối, chống lại","phớt lờ, bỏ qua","ghi chép, báo cáo"],"hint":"Result: many children DID move to small classes. So what did schools do with parents' demands?"},{"id":"v5","word":"undermine","ipa":"/ˌʌndəˈmaɪn/","pos":"v","ev":"e_d4","sent":"However, these points do not <b>undermine</b> STAR's basic findings.","opts":["làm suy yếu","làm rõ thêm","chứng minh lại","tóm tắt lại"],"hint":"\"these points\" are criticisms. \"However\" signals that they do NOT ____ STAR's findings."},{"id":"v6","word":"emulation","ipa":"/ˌemjuˈleɪʃn/","pos":"n","ev":"e_e4","sent":"California's programme stands more as a warning than as worthy of <b>emulation</b>.","opts":["sự noi theo","sự chỉ trích","sự trì hoãn","sự lãng phí"],"hint":"\"a warning\" is the opposite of something good that others would want to copy."},{"id":"v7","word":"exacerbate","ipa":"/ɪɡˈzæsəbeɪt/","pos":"v","ev":"e_e5","sent":"This is <b>exacerbating</b> the disparity in resources available to rich and poor schools in California.","opts":["làm trầm trọng thêm","làm giảm nhẹ đi","làm lộ rõ ra","làm chậm lại đi"],"hint":"Section E is \"a warning\". Rich schools get the best teachers, so what happens to the rich–poor gap?"},{"id":"v8","word":"disparity","ipa":"/dɪˈspærəti/","pos":"n","ev":"e_e5","sent":"…the <b>disparity</b> in resources available to rich and poor schools in California, because more affluent areas can attract the best teachers.","opts":["sự chênh lệch","sự hợp tác","sự thiếu hụt","sự ổn định"],"hint":"It compares TWO groups: \"rich and poor schools\"."},{"id":"v9","word":"pilot study","ipa":"/ˈpaɪlət ˌstʌdi/","pos":"n","ev":"e_f5","sent":"SAGE was a five-year <b>pilot study</b> to do some of the groundwork for a major project.","opts":["nghiên cứu thử nghiệm","báo cáo tổng kết","chính sách quốc gia","cuộc thi học sinh"],"hint":"\"groundwork for a major project\" = preparing for a bigger project."},{"id":"v10","word":"minuscule","ipa":"/ˈmɪnəskjuːl/","pos":"adj","ev":"e_f4","sent":"The California initiative shows that reductions made with too little forethought can yield <b>minuscule</b> gains.","opts":["rất nhỏ, không đáng kể","rất lớn, đáng chú ý","đều đặn, ổn định","bất ngờ, khó đoán"],"hint":"With \"too little forethought\" (poor planning), are the results good or poor?"}],"main":[{"id":"m1","sec":"A","ev":"e_a3","opts":["explains why cutting class size is a popular reform","shows that cutting class size angers all teachers","compares charter schools with ordinary state schools","describes the first US experiment on class size"],"hint":"Read the first and last sentences of A. What are the examples in the middle (unions, charter schools) used for?"},{"id":"m2","sec":"B","ev":"e_b3","opts":["explains why old national data may be misleading","proves that class size makes no real difference","describes how US dropout rates are measured","argues that most US families are well-off"],"hint":"Find \"Not necessarily\" and \"Another reason for discounting those data\". Does the writer trust the data?"},{"id":"m3","sec":"C","ev":"e_c3","opts":["describes how the STAR experiment was set up","reports the final results of the STAR study","criticises the teachers who took part in STAR","explains how teachers were trained for STAR"],"hint":"Does section C give any results? Or is it mostly \"were randomly assigned\", \"remained…\"?"},{"id":"m4","sec":"D","ev":"e_d2","opts":["presents STAR's results and criticism of them","shows that STAR's findings were completely wrong","describes the careers of two US researchers","explains why parents dislike small classes"],"hint":"Section D uses \"however\" twice. What does it change from and to each time?"},{"id":"m5","sec":"E","ev":"e_e4","opts":["warns about problems in California's programme","praises California as a model for other states","explains why rich areas cannot find teachers","shows that California has too many teachers"],"hint":"The first sentence of E uses the word \"a warning\". The topic sentence usually gives the main idea."},{"id":"m6","sec":"F","ev":"e_f4","opts":["describes SAGE and gives a final conclusion","shows that SAGE results differ from STAR's","describes a reform across all of Wisconsin","argues that class sizes should stay the same"],"hint":"Section F has two parts. The last part talks about STAR, SAGE and California together — what is that?"}],"infoTypes":["a general criticism of research quality","a reason that explains a result","the reaction of a group of people","the way participants were chosen","an expert's high praise for a study","a negative side effect of a programme"],"info":[{"id":"i1","sec":"A","ev":"e_a2","quote":"The testing of educators, by contrast, generally arouses the anger of unions.","hint":"Who feels what? Whose feeling is \"anger\"?"},{"id":"i2","sec":"B","ev":"e_b2","quote":"Because dropouts generally come from the low end of the achievement distribution, a reduction in the dropout rate could be expected to pull down average test scores.","hint":"The sentence starts with \"Because\". It answers the question \"Why…?\""},{"id":"i3","sec":"C","ev":"e_c1","quote":"Over the past 35 years, some studies of existing data have produced evidence that smaller classes benefit students, but most of these studies were poorly designed.","hint":"\"poorly designed\" describes the quality of what? Does it give any specific problems?"},{"id":"i4","sec":"C","ev":"e_c2","quote":"Frederick Mosteller of Harvard University has called it \"one of the greatest experiments in education in the United States history.\"","hint":"Who is Mosteller? Is \"one of the greatest…\" a criticism or praise?"},{"id":"i5","sec":"E","ev":"e_e2","quote":"Indeed, some of the extra teachers needed are being recruited from the poorer schools.","hint":"Do the poor schools gain or lose when their teachers are taken away?"},{"id":"i6","sec":"C","ev":"e_c3","quote":"Students entering kindergarten were randomly assigned to one of three kinds of classes.","hint":"\"randomly assigned\" answers the question \"HOW were students put into classes?\""}],"tfng":[{"id":"t1","s":"More than twenty US states are trying to reduce class sizes.","ev":"e_a1","hint":"Look at the end of section A."},{"id":"t2","s":"Between 1969 and 1997, the academic performance of US students improved greatly.","ev":"e_b1","hint":"Find the years 1969 and 1997 in section B."},{"id":"t3","s":"Most teachers in STAR were given special training for small classes.","ev":"e_c5","hint":"Find \"training\" in section C. Pay attention to the quantity word."},{"id":"t4","s":"STAR students stayed in their assigned class type until they finished primary school.","ev":"e_c4","hint":"Find \"remained\" in section C. Until which grade did they stay?"},{"id":"t5","s":"Jeremy Finn and Charles Achilles worked at the same university.","ev":"e_d0","hint":"Read the university names next to each person at the start of section D."},{"id":"t6","s":"Hanushek rejects all of the conclusions of STAR.","ev":"e_d2","hint":"Read the sentence that introduces Hanushek. How many conclusions does he criticise?"},{"id":"t7","s":"Most parents in Tennessee were in favour of the STAR experiment.","ev":"e_d3","hint":"Does the passage say what parents thought of the WHOLE experiment, or only what they wanted for their own children?"},{"id":"t8","s":"California does not have enough teachers for its programme.","ev":"e_e1","hint":"Read the second sentence of section E."},{"id":"t9","s":"The SAGE project cost less money than the California programme.","ev":"e_f1","hint":"Does section F mention money or cost at all?"},{"id":"t10","s":"SAGE lasted for five years.","ev":"e_f5","hint":"Read the first sentence of section F."}],"table":{"cols":["STAR","California","SAGE"],"rows":[{"key":"state","label":"State","opts":["Tennessee","California","Wisconsin","New York"],"ev":["e_c2","e_e4","e_f5"]},{"key":"size","label":"Small class size","opts":["13–17 students","about 20 students","12–15 per teacher","22–26 students"],"ev":["e_c3","e_e3","e_f3"]},{"key":"scale","label":"How big was it?","opts":["not stated in the text","the largest one so far","only 14 schools"],"ev":["e_c3","e_e4","e_f1"]}]},"test":{"g1":{"title":"Questions 27–31","letters":["A","B","C","D","E","F"],"intro":"<p>Reading Passage 3 has six sections, <b>A–F</b>.</p><p>Which section contains the following information?</p><p>Choose the correct letter, <b>A–F</b>.</p><p><b>NB</b> You may use any letter more than once.</p>","qs":[[27,"detailed criticism of the methodology of a project"],[28,"a comparison of the data from class-reduction projects"],[29,"the level of public interest in the issues of class-size reduction"],[30,"details of action taken to protect the validity of a project"],[31,"reasons why class composition changed during a project"]]},"g2":{"title":"Questions 32–40","letters":["A","B","C"],"intro":"<p>Classify the following statements as referring to</p><p><b>A</b>&nbsp; Project STAR<br><b>B</b>&nbsp; The California Project<br><b>C</b>&nbsp; SAGE</p><p>Choose the correct letter, <b>A</b>, <b>B</b> or <b>C</b>.</p>","qs":[[32,"The student composition of each class was left to chance."],[33,"A long-term improvement in performance was claimed."],[34,"Similar results were obtained for all social groups."],[35,"The project was a preliminary to a more comprehensive study."],[36,"Several different class types were involved in the project."],[37,"A special group of schools was selected to take part."],[38,"Classroom assistants were used as part of the project."],[39,"The project was responsible for aggravating existing problems."],[40,"Certain groups of pupils within the sample were identified as having benefited."]]}}};
+const K={"v1":"rrljkiac3f","v2":"38clzgi10r","v3":"vteo0495uh","v4":"b2vpzncavu","v5":"aka0fcj0zl","v6":"pqjeo2turb","v7":"1i4wa1vz4ld","v8":"1lyp3c7poso","v9":"15eauwfjn7h","v10":"e8fyqthvj","m1":"1pu4yfti5i0","m2":"usriiav4i1","m3":"rno0zx6sfw","m4":"1s8lu2729dv","m5":"27lg906wxpd","m6":"1gbfydgm1n9","i1":"12xpwnkxuw9","i2":"16me13nfaxb","i3":"ysv8r3mbdk","i4":"hwfizdid56","i5":"1zcpqciecu5","i6":"tj2eckgbi","t1":"1lxwhy70tfu","t2":"s6cpwvfqfg","t3":"t138l5gh9x","t4":"b401jidt57","t5":"1gc3b2nb9s4","t6":"u4f8kxr8fl","t7":"hjm7oyh3kr","t8":"1unsg6mc58m","t9":"f8tdoowl8x","t10":"lc3p2tra09","tb_state_0":"ns7mkda059","tb_state_1":"1udo1akynt9","tb_state_2":"9m6jmtjm93","tb_size_0":"r9r8gspyp2","tb_size_1":"nzqk2nor95","tb_size_2":"kdcswnlbi6","tb_scale_0":"1pn0vu9elf4","tb_scale_1":"yb27bwn0um","tb_scale_2":"1n81vt1gerf","q27":"2ni1w8qid","q28":"22b8uspy82v","q29":"1vmg7x50vjt","q30":"27eqhbztht3","q31":"105dn50ln0y","q32":"2eje6f7bohn","q33":"hlawah1zsl","q34":"17z3im8i353","q35":"29pgjt12m38","q36":"hcpdjbna80","q37":"3ljh0my9nn","q38":"txd5ig707l","q39":"1w1a8jyqrrp","q40":"1qor3lrlsmp"};
+const X={"v1":"GFEbWxUXQQrxyxNHBFBQR6jKv4EbQVJJUECMWxj3VMHLwY/dig1TjImeQwREEBQ=","v2":"GFEbWxUXQRlaiNDYVl6dw8RDSOmQmc67BqGQitNY3UdDjVsY9U5AwdHJqtBTDtONjg1NXojQxh8QAQ==","v3":"GFEbWxUXQamjAIvc90Zcr/iIWjzvVUOo3Y/cpwzB1NYPCUsADIbb3wlHQo/S0BsEUw5aWA0OjInkA0cU8NaqsxQ=","v4":"GFEbWxUXQQNar9qGzZcSCUikUVoij04ESAsAABhZABcADI6bqQZBAUgOBwpTD9OMpkMK8csTR7WVDE4EJwtQ2IpMGg==","v5":"GFEbWxUXQQHxyQdHBUAFTLpB158GWVlMukHXnxiCychGF0oKrpNJHhWXjvdOvg==","v6":"GFEbWxUXQR7T0ttHGFkVU5XT1E9CTxrBz9lFB4LI4FEXWYLXnxlKEx5TE1PJzXKMThsBwc7NHE8XktajQwRBEA==","v7":"GFEbWxUXQQHxyQdHXkGd1mbOTeTlk1o7jk1UBpNbHOBOE1KV007ECkMHBfGdQEEQ","v8":"GFEbWxUXQR7T0ttHFVC/2Y/TkUyC00TJBkQAHwAANkMDC7DZXFANp/zT0vkJERi44gAAMFVBFQ==","v9":"GFEbWxUXQQNVAQOk3FdcDYbTwLaKGkiCWhaJG0ccAQAAKk1OTwSqQdanGRG13dOMtgBNVojR1lb63QBHBIh4MQAJQZw=","v10":"GFEbWxUXQR/T088TVl9YncluloUfSK3cj9yv6LGoya3TTgzBfxLh3A==","m1":"GFEISkcPWU/2+QWG15ASRTlQHw5JHbCBGQBDAAQclc7KA0dTp8VBAJKb4kkODePFU+Tw5tEBUBIFgMiDHElGrN8ZQxGMibwNEwXT08kJTfXthMPhBUFBBRvj1gtZVoLO7x1JBQ7B2O8MUwdSEkkdDOPIHAAXSbPFHllMFQDmwoTd8hwKQxAFU0VZBh8bSYjh/xEKptRQGoDTwwoAH67YTkNHRFQLDwlHQxgJFhwAt/gPhJv8Gg5BYxgOAgEJE1JTEQ0JAB4eQxAF04ykQwHxyUoRrpxcAZnLyUGt/5Kb9EgKT0MGt9UHBksACASixx1HUxkShJrKGgCinVAMGLbBDxoOUBg=","m2":"GFEISkcPWU/2+QWG15MSRTpQAqLDG1NTltPoAAMFhZvpFFQKqsdBRFSF2v1BTIza/gAqNg8qP1MLDIDeygNHDRurgllKQ6mjAIvc7l9cDhCz2A8OTgfk9AYeCU8ehZv9CFSt/qjRDQAWAFRTAAGixAAGCgAGAbDYCwZEB63NDVMZW1kNCwLxyQRHGV2/xRZKTBWI1foAG4nCp08OhZvhQRyI1OMCTEcNgM7CTU0KuokNReT8AJLX5gxEPSxHGwaMiaZDBEESH6nHTfbtDJnL7RRJBRrBzO8XAAeN360NQQcAAQZBB0in1RoGAAMGGE4FRUKM08ICAk9ENUwpDAdNXFJOBh5BCBgOAUsgR1gcr8FJGrCNGUgRSY7X41VOEAEIAU4VHsHf7BoGDk8c","m3":"GFEISkcPWU/2+QWG15ISRCZTCJPS4UUQ48kMHwAnPCRyc5DQlJCEw9MGUh0FDI/OnwNBGMHJ2k4ARlAPHIyIlkRDAdPS8RdBExSF3v4AUhoLCxsAHqzXABMBpoE8dDc7488WUKHjr92E1ddDVxmSmswVVE4SkdnYGBJZRQqumAdGRwXSx+kGU6fjiNjaHQAAjs2fAEgJwejPMXITS1g7hMjWGUUfAcHNwlNOkt/FTVWR2OxN9qZCgteTB0ojQxM/p9cdQwSI2eRT5Pms109UHISa8jthNUmm2R9FBACuzwBOABWi00lTC7eTHFA/UQtXQA0XCFMKAgIfQFwWABAGGx8HAVNBBhZXUwQNBkkyOGEmUgQRHgwcDjFHQFZd","m4":"GFEISkcPWU/2+QWG15USUDZFEKbdVEEAIzyg6IAdGlIOks/TAFNRFI/eg0NaLx0HDUlVTWEMDkkYBAAeSlMb8ZcNEwXxw0oFrpgSGFJNOwQAAQBINj9ofAcw49AQUxYZlcixCFRETguT0tsHBEkfjJvyDwAXAKbHQy9PVlgNDQJGSR8JCVEOHRsLFkU9IDJydCdhMEYASRFFFRwCEBpOBh04AkOQ7+ZJCAGw2U4IRlAcid/OClMxEFRCDh1eDB4CAU1cBwAKHQIyVl0CLg==","m5":"GFEISkcPWU9xqsgSTVYUltrVTrexgNnuT1RjER4GBAMXAxpBSTICMBUNBwIcUgMGE0JTQQNSDkcFAB8DDA0UTUZfTA1NUxpKEAJHCB8YUgEVAAQPGhkVVBkdAT5OS00gQRxO5NKi30kKrNJOH4Cd1k5Qtv6GyeBXTRELGoyIiFhDCluqywhNQxW0yxxCU0sJDY7P104XUgyhzQYFU0cArYA2g+z6CAgarcEOBwfk8xwISVIirt5FCJLXjUMNEhjT08lHGdTH5hVSABvm0QwIVbedUBEHocELBVNWiNSLLUEAqsZPEY/TwkkbABKxzghcQxA=","m6":"GFEISkcPWU/2+QWG15cSRCNTBBuI2f4aACcpLqSb5htEcyYuM0VbdwhTBQYAEgVOSk8cgtfmGkkEj9nMGRJbWILXnwdKBAVZXAeEycBSC6HFGhpzEhMEckEYp4BHOjciNgCAm8EHCUEEwdj2TgQFlMnKAk4Qt8QSRMzY/B5JBA+rhhIDRQMLk9PBDFNDkPJnLsHb0URICIjMxBBIQUuH0tdBREKgzwdDBJTI5AxOF5LWmRduAgFbDwUVA18dTUtRHg==","i1":"GFEISkcPWU9uSwsVBkQPERtFVBoAQQIaDgocAAAAABRODh0BBiwCT1sAE6bbHgtFp+IC8ZdDQ0VfiNH+HRESHKvWTVILBqXEiNTzSUZGUAnB3dEBVZGbxghHUBGOy8UGQxQE042ADUMQFA==","i2":"GFEISkcPWU9uSygCClMJEkWQ5ccvTU5HHYnb10lFDBivzAoGU0yinVIBHFUat89THlNYDaf8W4jR5AQSCBNVHAJBEazCThxIAreTRQwYjdrqThhIopQcAlMBqPcNFFcSf35DFNPT1RJJ08f+AB6E29IGTlQGrtGVm/gWF0wPAQeSm+BVUg211AJaQQ4=","i3":"GFEISkcPWU9xAYvc4BMfCePNRQ0NBw8LAAAaHBoOQwuS15EBAQAfhMj8FVIAiZvUGEEwSwQWDAEBSxdJBh5bDgQCDW9eTQAMDa3RHAZMTqDYHFQFgtLkBAAMh5vXRQcNgMngSE6y1Q5CSTi/0wZN8YoXQwZaAEqj+NLH4AARDI/fzRVMfEE2LCAoKiU2KQAMFEkGDBAMEh8/SgxRFg4CSQQRgsnOWxdZoMFfSQkPiIjrQUwOhNXiBkEH48lSJzwggtLzOAADh5vlDFMGgMnGSFQZlNrvRVQSC7DZXFANEwXT08kOSV6d2rkTRQ2m0BRMQwsHBxNJAAEGA0dPCEi01VMRCZPZ1wAftsEVR1YE","i4":"GFEISkcPWU9/BhkTDFgQBBwATTARFwQVVRcJSAWkyAATGhQQsM9ORggbQU0ABbfVRCVBHANXF0IFTUYBD0cORhkAGkUWDFAACgRCAUkFDAkcUyxQQQWwxQAKjsm9CAAYHBAKWRGS15dDDQAMXUkOpMlaFEENSApYIzEzJglRXQ==","i5":"GFEISkcPWU9xAazXr5QSBgAaF6TNGgFWJkEfAAIKUgsPB0UAlZrICAAVSLPYAkcVCK7MCkMFBPGdQ0OPtPtKC4iP2RgACQykwBtJAAzj2QdEEcHezUYREbKQjt29D0dQHAgPsckCTYfl4U1GRevTjIn0BABJWxsJ48YKRxUcAJfepwdJDISaxA9IRafk49xGTKKAUAasxhFBCYzexh0KEkdFgtaXSRKG05AJTwIT","i6":"GFEISkcPWU9uSxgGB1ITGQQcABYSCkkXDxcQNUFJHaLaVAfBzcZSJuPiKydTDY/Y/g4SREQNBRJBBACvhp3P9QwAAwkYTVAGGxVAQ63hp96VyIMURQqEmtwYTwWmzgxTDvGWTkMDWqrZCklanc/zFQ5VHA==","t1":"GFEISkcPWU9uSwUREUNcICUwKxcKTUFDTBcIQUkLDhlYEjNyNDFDFwhRRUgCHlsHDUcXXR0nIXU2CgkIQWsPQ1ASBAUVEREIPDM7ZRcECFxDVEMeRggeAgcRCCYrPCsEUxldF18GCUcKD0cXXR0nIXU2CgkIQRkPHg==","t2":"GFEISkcPWU9wqsoOVFy/9ShsD2cNHE1BXkoNBFQACQYaRlwhICU9NkMaAxJWTgIJVwQDBFRCGTQnIyEoAh0OV2sPQ4+0+0oJE/TMp/rvMGUVktapXg0/T1sEGhUbRBkiYSshIAIHAUtrD01PTw==","t3":"GFEISkcPWU9uSywCAxMIIyAvOyARAE1AUk4GBEQMDkcVXQVmMjw2JgoSARJDXwIEXAAEACgRXHthPrL/xgdN8ZpZQwpbqssIVEUVhesic4Hytd3TjI4ATfb4qccbEwin++08ZYH1/xJZSqXd09LJBFRFnf3aJXMZQR4CQUNxQUMQFA==","t4":"GFEISkcPWU96iNHqFxQPLy8kcyYLkta7F8zY8hIFBYbOlRVmLa3o3hNTqaP0nkOpo4jQ2BoUFKf78ydlD5LWqUcNUE0aNUgTHEYTMyYkPDAXUxlaUg0XBVsbDkcTRh0iJBBxbE9TAdOMthNNBkmu9reXXCUpOSqk2PADEkHM2OwSBYvc70RcMimK46TY7gNVGQ8e","t5":"GFEISkcPWU90AAQJVNTH2WECNjJDKgJAXA02A1sfDxUHXAg/bWwSJgsaAV5SXkOMifZKIhVGCCMzInMIChAFW1BMDU1nBwMREUcPLzU1c6fl4U1aVkRDGUCv2obPqBIhYSc7hsIQTVxfTBZDEBQ=","t6":"GFEISkcPWU96CAQSB14ZLWEvO6TY+k1uFU4RBEYACQ4HUw9mEgMeAEMcCxJkeSI/FRpKDBFPXCUuIjApFgAEXVleP08eSQEPt4ISIWE8O6TZ0AQSaw8CAV41SElWSw==","t7":"GFEISkcPWU9wqsoOVFQUr/TdACmK5SxuDpLWq0MNEIyJ+EoXHNbH6288VT4nPmUjFpLWo1kNAAJcSRyk1FhcIq7vuzdpOC2v2PxNGmsPEwxADAQTVFMZIy46RDQVdGxiQxgF8YNDBE1cqtkOVEcUr/TxAC88LysmQycIXFlIEB5XDEoJt4QVbiw8VSkudqT1xB0KEl/M2PQSHQKk2RcSKSc9wfzOO2UmAgpNWV/u1wNVR0ga","t8":"GFEISkcPWU9uSw4CB0gVIDd1JEMABV1FWQIKV0kFAVRMGTUxPSARADEQFxBDGVoAi93LTVwzO5bkDFMbW/SHDU0PSQQIABgZOj0gIgtTGVdWTgsIQBpERQk=","t9":"GFEISkcPWU9wqsoOVEoTbjyXgSkhdhYPJDZNRNaW+AQSKgsLHV8TPCE9QWc/t/7PQxCuk1RFQw5aiNHqGhkIPInkwfzUOCJuSxAF04ykQ1wGSR4Vsomd9dI6R2tpOC2v2dwAEkHuwwISHRihxNjH0yEzACkuPobmDFpBElxFoNlcDkoPlYL9biGXky5pktSv2cwDElRFCk1CAanKWhsB","t10":"GFEISkcPWU9uSwtHElhGGXkrMCQRUx1bW0IXTUEdHwMNbRJcaXI+hsocTVb0jQpNB0kEo/dcHl4p","tb_state_0":"GFEISkcPWU9uSx4PEUILFhoPERYsVRl0FhobAQpTBgQPHwhWF30RAlgMCRNUMQsyJj1WRXf07TuE1M8LUzBMS0EO","tb_state_1":"GFEISkcPWU9mqsAJVAE3tcSn1Qs4EQgxosAHDk8RBqrMDRtNXvSNQw7T0s0GVAA+HRNBNwQzWBosEwIAB09aqvgOgsnMXBdoSkMQFA==","tb_state_2":"GFEISkcPWU9uSz0OBwEwHQcIGkIsEi8jHBcGARpTKA0LGghEUkAGA0ZJLRIVED4dAAQRRTZcXBINBgAOGhoGAENbPnNwaEoxEElCo+UNvsnVD1QjdhxcGQwEQzYBAQJOABuMib4ND66SSR6k3gx/BwanxITkrxIwSbfyjtTSAE4Lkta/VA0AjInOC0c+By0WGRhUIzZcEnlLDg==","tb_size_0":"GFEISkcPWU9+iNH8BEIxG4jB6n9EDl5dhaDAZXZySVQpRlRdVAcMU1wFF14XGFYMBBMHPn1dSUhXvbDvAwXC7FCRF0ySz+4URRoctdOS1q9ZSk1PTw==","tb_size_1":"GFEISkcPWU9uSwkLFREsFhpaETdQCEEKDhFUQldVTlMGEAAQDREXQwcCEgUdP08SQa72G4Pl0gdaIHYfXhw=","tb_size_2":"GFEISkcPWU9uSwYIAwctFg1aETdXXFBEh/LyVlAAABACSRhIFQYJBhoGAU1AVlkKAhKL6sFUFjBTWEiH36FNBAjTrLNXR08dRUARluXyUV1fQz9RTRrzvAyMiMgERzJLcVEU","tb_scale_0":"GFEISkcPWU9wqsoOVAk3sNcPC0Ux888HTyd0MiZBF6bXAAsPT1QGDUm3zw1UFwGrgtaW/gNVR0qj5IPk2A0GTBG+i81Oq+VPsNUPVUcZ","tb_scale_1":"GFEISkcPWU9uSz4PEUIzEhEGCRYrEQwBCglJD0ERCwQABw0cBx9FUx1FAhQRFxoCXBddEQJVGwsKGQd/AAxBCgQtHVw3CQlJCg4ACQwSU1ON7sN8UU1d","tb_scale_2":"GFEISkcPWU9uSykLFREsUxAIFgAsEgsKHAlZUlRQVRAGDE8GAlMMHQFLFxxXTUEKAggbDiwvQU9OGA=="};
+
+/* ===================== UTILITIES ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function hsh(str){let h1=0xdeadbeef,h2=0x41c6ce57;for(let i=0;i<str.length;i++){const c=str.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);}
+const isOk = (id,val) => hsh(SALT+id+'|'+val) === K[id];
+function unlock(b64,key){try{const bin=atob(b64);const kb=new TextEncoder().encode(key);const out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i)^kb[i%kb.length];return JSON.parse(new TextDecoder().decode(out));}catch(e){return null;}}
+const reveal = (id,val) => unlock(X[id], SALT+id+'|'+val) || {};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const fmt = s => { s=Math.max(0,Math.round(s)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),2200);}
+const store = {
+  get(k,d){try{const v=localStorage.getItem('csm27_'+k);return v?JSON.parse(v):d;}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem('csm27_'+k,JSON.stringify(v));}catch(e){}}
+};
+const ICON = {
+  hint:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>',
+  ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3L17 9"/></svg>',
+  no:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><path d="M8.5 8.5l7 7M15.5 8.5l-7 7"/></svg>',
+  pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>'
+};
+
+/* ===================== SOUND ===================== */
+let AC=null;
+function tone(freq,start,dur,type='sine',vol=.18){if(!AC)return;const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(0,AC.currentTime+start);g.gain.linearRampToValueAtTime(vol,AC.currentTime+start+.01);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+start+dur);o.connect(g);g.connect(AC.destination);o.start(AC.currentTime+start);o.stop(AC.currentTime+start+dur+.05);}
+function initAudio(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){}}
+const sfx = {
+  ting(){tone(1568,0,.35);tone(2093,.09,.5);},
+  wrong(){tone(220,0,.18,'triangle',.2);tone(165,.12,.25,'triangle',.18);},
+  win(){[523,659,784,1047].forEach((f,i)=>tone(f,i*.11,.3,'square',.07));tone(1319,.46,.6,'sine',.15);},
+  click(){tone(880,0,.06,'sine',.08);}
+};
+
+/* ===================== SCORM 1.2 ===================== */
+const LMS = {
+  api:null,
+  find(w){let n=0;while(w&&!w.API&&w.parent&&w.parent!==w&&n<12){w=w.parent;n++;}return w&&w.API?w.API:null;},
+  init(){try{this.api=this.find(window)||(window.opener&&this.find(window.opener));if(this.api)this.api.LMSInitialize('');}catch(e){this.api=null;}},
+  get(k){try{return this.api?this.api.LMSGetValue(k):'';}catch(e){return '';}},
+  set(k,v){try{if(this.api)this.api.LMSSetValue(k,String(v));}catch(e){}},
+  commit(){try{if(this.api)this.api.LMSCommit('');}catch(e){}},
+  finish(){try{if(this.api)this.api.LMSFinish('');}catch(e){}}
+};
+LMS.init();
+function lmsName(){const raw=(LMS.get('cmi.core.student_name')||'').trim();if(!raw)return '';if(raw.includes(',')){const [a,b]=raw.split(',').map(s=>s.trim());return (b+' '+a).trim();}return raw;}
+function loadSuspend(){try{const s=LMS.get('cmi.suspend_data');return s?JSON.parse(s):null;}catch(e){return null;}}
+function saveSuspend(){LMS.set('cmi.suspend_data',JSON.stringify({sd:S.scafDone,best:S.best,att:S.attempts.length}));LMS.commit();}
+
+/* ===================== STATE ===================== */
+const S = {
+  name:'', cls:'',
+  solved: store.get('solved',{}),
+  found: store.get('found',{}),   // id -> chosen correct value
+  wrongs: store.get('wrongs',{}),   // id -> number of wrong tries
+  part: store.get('part',0),
+  scafStart: store.get('scafStart',null),
+  scafDone: store.get('scafDone',false),
+  scafSent: store.get('scafSent',false),
+  attempts: store.get('attempts',[]),     // [{score,total,at}]
+  best: store.get('best',null),
+  cur: store.get('cur',null),              // running test {start, ans:{}}
+  phase:'scaffold'
+};
+const sus = loadSuspend();
+if(sus){ if(sus.sd) S.scafDone=true; if(sus.best!=null && (S.best==null||sus.best>S.best)) S.best=sus.best; }
+function persist(){['solved','found','wrongs','part','scafStart','scafDone','scafSent','attempts','best','cur'].forEach(k=>store.set(k,S[k]));}
+const givenName = () => { const p=(S.name||'').trim().split(/\s+/); return p[p.length-1]||'Con'; };
+
+/* ===================== FULL-SCREEN / LEAVE TRACKING ===================== */
+const OUT = { log:{scaffold:[],test:[]}, since:null, kind:null, active:false };
+const fsEl = () => document.fullscreenElement||document.webkitFullscreenElement;
+const fsSupported = () => !!(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen);
+function goFS(){const d=document.documentElement;try{const p=(d.requestFullscreen||d.webkitRequestFullscreen).call(d);if(p&&p.catch)p.catch(()=>{});}catch(e){} store.set('wantFS',true);}
+function isOut(){return (fsSupported() && !fsEl()) || document.visibilityState==='hidden';}
+function checkOut(){
+  if(!OUT.active) return;
+  const out = isOut();
+  if(out && OUT.since===null){
+    OUT.since=Date.now(); OUT.kind = document.visibilityState==='hidden' ? 'chuyển tab/ứng dụng' : 'thoát toàn màn hình';
+    const n = OUT.log[S.phase].length+1;
+    $('#fsCount').textContent = 'This is exit number '+n+' in '+(S.phase==='test'?'the test':'Part 1')+'. Your time away is being recorded.';
+    $('#fsWarn').classList.remove('hidden');
+  } else if(!out && OUT.since!==null){
+    closeOut();
+  }
+}
+function closeOut(){
+  if(OUT.since===null) return;
+  OUT.log[S.phase].push({kind:OUT.kind, sec:Math.round((Date.now()-OUT.since)/1000)});
+  OUT.since=null; $('#fsWarn').classList.add('hidden');
+}
+function outSummary(phase){
+  const arr = OUT.log[phase].slice();
+  if(OUT.since!==null && S.phase===phase) arr.push({kind:OUT.kind, sec:Math.round((Date.now()-OUT.since)/1000), ongoing:true});
+  return { count:arr.length, total:arr.reduce((a,b)=>a+b.sec,0), list:arr.map((o,i)=>'Lần '+(i+1)+': '+fmt(o.sec)+' ('+o.kind+')').join('; ') };
+}
+document.addEventListener('fullscreenchange',checkOut);
+document.addEventListener('webkitfullscreenchange',checkOut);
+document.addEventListener('visibilitychange',checkOut);
+$('#fsBack').onclick=()=>{ if(fsSupported()) goFS(); setTimeout(checkOut,300); };
+
+/* ===================== SEND TO GOOGLE SHEET ===================== */
+function send(payload){
+  payload.lesson = CONFIG.LESSON; payload.name=S.name; payload.cls=S.cls; payload.canvasName=lmsName(); payload.clientTime=new Date().toISOString();
+  if(!/^https:\/\/script\.google/.test(CONFIG.SCRIPT_URL)) { console.warn('SCRIPT_URL not set', payload); return; }
+  const body = JSON.stringify(payload);
+  const go = (n) => fetch(CONFIG.SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body}).catch(()=>{ if(n<3) setTimeout(()=>go(n+1),2500*(n+1)); });
+  go(0);
+}
+
+/* ===================== HIGHLIGHTER ===================== */
+let hlOn = false;
+$('#hlBtn').onclick=()=>{hlOn=!hlOn;$('#hlBtn').classList.toggle('on',hlOn);$('#passage').classList.toggle('hlmode',hlOn);toast(hlOn?'Highlighter ON: select key words in the passage. Click a highlight to remove it.':'Highlighter OFF');};
+$('#hlClear').onclick=()=>{document.querySelectorAll('#passage mark.hl').forEach(unwrap);};
+function unwrap(m){const p=m.parentNode;while(m.firstChild)p.insertBefore(m.firstChild,m);p.removeChild(m);p.normalize();}
+$('#passage').addEventListener('mouseup',()=>{
+  if(!hlOn) return;
+  const sel=window.getSelection(); if(!sel.rangeCount||sel.isCollapsed) return;
+  const range=sel.getRangeAt(0); const root=$('#passage');
+  if(!root.contains(range.commonAncestorContainer)) return;
+  let anc=range.commonAncestorContainer; if(anc.nodeType===3) anc=anc.parentNode;
+  const nodes=[]; const w=document.createTreeWalker(anc,NodeFilter.SHOW_TEXT,{acceptNode:n=>range.intersectsNode(n)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT});
+  while(w.nextNode()) nodes.push(w.currentNode);
+  nodes.forEach(n=>{
+    if(n.parentNode.closest('h2,.lt')) return;
+    let s=0,e=n.length;
+    if(n===range.startContainer) s=range.startOffset;
+    if(n===range.endContainer) e=range.endOffset;
+    if(s>=e || !n.textContent.slice(s,e).trim()) return;
+    if(n.parentNode.classList && n.parentNode.classList.contains('hl')) return;
+    let mid=n; if(s>0) mid=n.splitText(s); if(e-s<mid.length) mid.splitText(e-s);
+    const m=document.createElement('mark'); m.className='hl'; mid.parentNode.insertBefore(m,mid); m.appendChild(mid); justHL=true;
+  });
+  sel.removeAllRanges();
+});
+$('#passage').addEventListener('click',e=>{
+  if(justHL){justHL=false;return;}
+  if(!window.getSelection().isCollapsed) return;
+  if(scanId && e.target.closest('.vw') && e.target.closest('.vw').dataset.w===scanId){onScanClick(e);return;}
+  if(hlOn){const m=e.target.closest('mark.hl'); if(m){unwrap(m);return;}}
+  onScanClick(e);
+});
+
+/* evidence highlight (scaffold only) */
+function showEv(ids){
+  if(S.phase==='test') return;
+  document.querySelectorAll('.ev.on').forEach(x=>x.classList.remove('on'));
+  (Array.isArray(ids)?ids:[ids]).forEach((id,i)=>{const el=document.querySelector('.ev[data-ev="'+id+'"]');if(el){el.classList.add('on');if(i===0)el.scrollIntoView({behavior:'smooth',block:'center'});}});
+}
+
+/* resizable divider */
+(function(){const d=$('#divider'),p=$('#passWrap');let drag=false;d.addEventListener('mousedown',()=>{drag=true;document.body.style.userSelect='none';});window.addEventListener('mouseup',()=>{drag=false;document.body.style.userSelect='';});window.addEventListener('mousemove',e=>{if(!drag)return;const pct=Math.min(75,Math.max(28,e.clientX/window.innerWidth*100));p.style.width=pct+'%';});})();
+
+/* ===================== SCAFFOLD ===================== */
+const PARTS = [
+  { key:'vocab', title:'Key words', short:'10 words', items:()=>DATA.vocab.map(v=>v.id),
+    intro:'Scan the passage quickly to find each word or phrase, then click on it in the passage. Next, use the context around it to guess its meaning.',
+    tip:'<b>Tip:</b> When scanning, do not read every word. Move your eyes fast and look for the shape of the word. Words may appear in a different form (e.g. <i>-ing</i>, <i>-ed</i>). To guess the meaning, read the whole sentence and the next one: is the idea positive or negative? What is the word describing?',
+    svg:'<svg viewBox="0 0 64 64"><rect x="8" y="10" width="40" height="46" rx="5" fill="#e8eefc" stroke="#2b4a73" stroke-width="3"/><path d="M16 24h24M16 32h18M16 40h22" stroke="#2b4a73" stroke-width="3" stroke-linecap="round"/><circle cx="44" cy="42" r="10" fill="#fff" stroke="#e9a23b" stroke-width="4"/><path d="M51 49l7 7" stroke="#e9a23b" stroke-width="5" stroke-linecap="round"/></svg>' },
+  { key:'main', title:'Main idea of each section', short:'Sections A–F', items:()=>DATA.main.map(v=>v.id),
+    intro:'What is each section A–F mainly about? A clear "map" of the passage helps you do Matching Information questions faster.',
+    tip:'<b>Tip:</b> Read the first and last sentences of the section and notice linkers like <i>however, but, not necessarily</i>. Wrong options often match a small detail but not the main idea, or they exaggerate (<i>all, completely, always</i>).',
+    svg:'<svg viewBox="0 0 64 64"><rect x="6" y="8" width="52" height="48" rx="6" fill="#fff" stroke="#2b4a73" stroke-width="3"/><g fill="#2b4a73"><rect x="12" y="15" width="10" height="10" rx="2"/><rect x="12" y="29" width="10" height="10" rx="2"/><rect x="12" y="43" width="10" height="7" rx="2"/></g><path d="M27 20h24M27 34h18M27 47h22" stroke="#9aa8b8" stroke-width="3" stroke-linecap="round"/></svg>' },
+  { key:'info', title:'Types of information', short:'6 sentences', items:()=>DATA.info.map(v=>v.id),
+    intro:'"Which section contains the following information?" asks about the TYPE of information (a criticism, a reason, a comparison, an action…), not just key words. Decide what type of information each sentence below contains.',
+    tip:'<b>Tip:</b> Underline the main noun in each test question (<i>criticism, comparison, reasons, details of action…</i>). Then find a section where a sentence does that job — at the right level (e.g. <i>detailed</i> = many specific points).',
+    svg:'<svg viewBox="0 0 64 64"><rect x="6" y="12" width="22" height="16" rx="4" fill="#e8eefc" stroke="#2b4a73" stroke-width="3"/><rect x="36" y="12" width="22" height="16" rx="4" fill="#fff8e6" stroke="#e9a23b" stroke-width="3"/><rect x="6" y="38" width="22" height="16" rx="4" fill="#e7f6ec" stroke="#2e9d5b" stroke-width="3"/><rect x="36" y="38" width="22" height="16" rx="4" fill="#fdecec" stroke="#d64545" stroke-width="3"/></svg>' },
+  { key:'table', title:'Compare the 3 projects', short:'STAR · California · SAGE', items:()=>DATA.table.rows.flatMap(r=>DATA.table.cols.map((c,i)=>'tb_'+r.key+'_'+i)),
+    intro:'The passage describes 3 projects. Complete the table so you do not mix up their information — this is the key to the Classification questions.',
+    tip:'<b>Tip:</b> When a passage has several projects or people, highlight each name every time it appears. Information about a project usually comes right after its name.',
+    svg:'<svg viewBox="0 0 64 64"><rect x="4" y="10" width="56" height="44" rx="5" fill="#fff" stroke="#2b4a73" stroke-width="3"/><path d="M4 22h56M23 10v44M42 10v44M4 34h56M4 44h56" stroke="#2b4a73" stroke-width="2.5"/><rect x="4" y="10" width="56" height="12" rx="5" fill="#2b4a73"/></svg>' },
+  { key:'tfng', title:'True / False / Not Given', short:'10 statements', items:()=>DATA.tfng.map(v=>v.id),
+    intro:'Check that you understand the details exactly. Pay attention to words of degree: <i>most, few, all, some, only</i>.',
+    tip:'<b>Remember:</b> TRUE = the passage says the same. FALSE = the passage says the opposite. NOT GIVEN = the passage does not say, so you cannot decide. Do not use your own knowledge!',
+    svg:'<svg viewBox="0 0 64 64"><circle cx="18" cy="32" r="12" fill="#e7f6ec" stroke="#2e9d5b" stroke-width="3"/><path d="M12 32l4 4 8-8" stroke="#2e9d5b" stroke-width="3" fill="none"/><circle cx="46" cy="20" r="11" fill="#fdecec" stroke="#d64545" stroke-width="3"/><path d="M42 16l8 8M50 16l-8 8" stroke="#d64545" stroke-width="3"/><circle cx="46" cy="46" r="11" fill="#eef2f7" stroke="#5f6b7a" stroke-width="3"/><text x="46" y="51" text-anchor="middle" font-size="14" font-weight="700" fill="#5f6b7a">?</text></svg>' }
+];
+const partDone = i => PARTS[i].items().every(id=>S.solved[id]!==undefined);
+const allDone = () => PARTS.every((p,i)=>partDone(i));
+
+function renderScaffold(){
+  const root=$('#scaffold');
+  let h='<div class="stepper">';
+  PARTS.forEach((p,i)=>{const ids=p.items();const n=ids.filter(id=>S.solved[id]!==undefined).length;
+    h+='<button class="step '+(i===S.part?'on ':'')+(n===ids.length?'done':'')+'" data-p="'+i+'"><b>'+(i+1)+'. '+p.title+'</b><small>'+n+'/'+ids.length+' · '+p.short+'</small><div class="bar"><i style="width:'+(n/ids.length*100)+'%"></i></div></button>';});
+  h+='</div>';
+  if(S.part===PARTS.length){ h+=finishBox(); root.innerHTML=h; bindStepper(); bindFinish(); return; }
+  const P=PARTS[S.part];
+  h+='<div class="partHead">'+P.svg+'<div><h3>'+(S.part+1)+'. '+P.title+'</h3><p>'+P.intro+'</p></div></div><div class="tip">'+P.tip+'</div><div id="items"></div>';
+  h+='<div class="navRow"><button class="btn ghost" id="prevP" '+(S.part===0?'disabled':'')+'>'+ICON.back+'Previous part</button><button class="btn" id="nextP">'+(S.part===PARTS.length-1?'Finish':'Next part')+ICON.arrow+'</button></div>';
+  root.innerHTML=h; bindStepper();
+  const box=$('#items');
+  if(P.key==='vocab') vocabFlow(box);
+  if(P.key==='main') DATA.main.forEach(v=>box.appendChild(mcqCard(v.id,'Section',v.sec,'<div class="prompt">Section '+v.sec+' mainly …</div>',v.opts,'one',v.ev,v.hint,res=>expl(res.exp,v.ev))));
+  if(P.key==='info') DATA.info.forEach((v,i)=>box.appendChild(mcqCard(v.id,'Sentence '+(i+1)+' · Section',v.sec,'<blockquote>'+esc(v.quote)+'</blockquote><div style="font-size:14px;color:#5f6b7a;margin:-2px 0 10px">What type of information does this sentence contain?</div>',DATA.infoTypes,'two',v.ev,v.hint,res=>expl(res.exp,v.ev))));
+  if(P.key==='tfng') DATA.tfng.forEach((v,i)=>box.appendChild(mcqCard(v.id,'Statement '+(i+1),null,'<div class="prompt">'+esc(v.s)+'</div>',['TRUE','FALSE','NOT GIVEN'],'three',v.ev,v.hint,res=>expl(res.exp,v.ev),true)));
+  if(P.key==='table') box.appendChild(tableCard());
+  $('#prevP').onclick=()=>{S.part--;persist();renderScaffold();$('#taskWrap').scrollTop=0;};
+  $('#nextP').onclick=()=>{
+    if(!partDone(S.part)){toast('Please finish all the questions in this part first.');return;}
+    S.part++; persist(); if(S.part===PARTS.length) onScaffoldComplete(); renderScaffold(); $('#taskWrap').scrollTop=0;
+  };
+}
+function bindStepper(){document.querySelectorAll('.step').forEach(b=>b.onclick=()=>{const p=+b.dataset.p;
+  if(p>S.part && !PARTS.slice(0,p).every((x,i)=>partDone(i))){toast('Please do the parts in order.');return;}
+  S.part=p;persist();renderScaffold();$('#taskWrap').scrollTop=0;});}
+
+function mcqCard(id,label,secLetter,promptHtml,opts,layout,ev,hint,onRight,keepOrder){
+  const c=document.createElement('div'); c.className='card';
+  c.innerHTML='<div class="qn">'+label+(secLetter?' <span class="sl">'+secLetter+'</span>':'')+'</div>'+promptHtml+'<div class="opts '+layout+'"></div><div class="fb"></div>';
+  const wrap=c.querySelector('.opts'), fb=c.querySelector('.fb');
+  const list = keepOrder ? opts : shuffle(opts);
+  list.forEach(o=>{const b=document.createElement('button');b.className='opt';b.textContent=o;b.dataset.v=o;wrap.appendChild(b);
+    b.onclick=()=>{ initAudio();
+      if(isOk(id,o)){ S.solved[id]=o; persist(); sfx.ting(); finish(); updateStepper(); }
+      else { b.classList.add('wrong'); b.disabled=true; S.wrongs[id]=(S.wrongs[id]||0)+1; persist(); sfx.wrong();
+        c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+        fb.innerHTML='<div class="hint">'+ICON.hint+'<div><b>Not quite.</b> '+esc(hint)+'</div></div>'; }
+    };});
+  function finish(){const val=S.solved[id];c.classList.add('solved');
+    wrap.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.dataset.v===val)b.classList.add('right');});
+    fb.innerHTML=''; fb.appendChild(onRight(Object.assign({val,fresh:true},reveal(id,val)))); showEv(ev);}
+  if(S.solved[id]!==undefined){ const val=S.solved[id]; c.classList.add('solved'); wrap.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.dataset.v===val)b.classList.add('right');}); fb.appendChild(onRight(Object.assign({val},reveal(id,val)))); }
+  return c;
+}
+function expl(text,ev){const d=document.createElement('div');d.className='expl';d.innerHTML=ICON.ok+'<div>'+esc(text||'')+'</div><button class="evbtn">Show in text</button>';d.querySelector('.evbtn').onclick=()=>showEv(ev);return d;}
+function wordCard(v,res){const d=document.createElement('div');d.className='wcard';
+  d.innerHTML='<div><span class="w">'+esc(v.word)+'</span><span class="ipa">'+esc(v.ipa)+'</span><span class="pos">'+esc(v.pos)+'</span></div><div class="vi">'+esc(res.vi||'')+'</div><div style="margin-top:8px"><button class="evbtn btn ghost" style="padding:5px 10px;font-size:13px">Show in text</button></div>';
+  d.querySelector('button').onclick=()=>showEv(v.ev);return d;}
+let scanId=null;
+function markFound(){document.querySelectorAll('.vw').forEach(el=>el.classList.toggle('found',!!S.found[el.dataset.w]||S.solved[el.dataset.w]!==undefined));}
+function vocabFlow(box){
+  const list=DATA.vocab; const cur=list.find(v=>S.solved[v.id]===undefined);
+  scanId=null; let last=null;
+  list.forEach((v,i)=>{
+    if(S.solved[v.id]!==undefined || (v===cur && S.found[v.id])){
+      last=mcqCard(v.id,'Word '+(i+1)+' · guess the meaning',null,'<div class="prompt">'+v.sent+'</div><div style="font-size:14px;color:#5f6b7a;margin:-4px 0 10px">Use the context to guess: what does the word in bold mean? Choose the Vietnamese meaning.</div>',v.opts,'two',v.ev,v.hint,res=>{const c=wordCard(v,res);if(res.fresh)setTimeout(()=>{if(S.part===0)renderScaffold();},1400);return c;});
+      box.appendChild(last);
+    } else if(v===cur){
+      scanId=v.id;
+      const c=document.createElement('div');c.className='card scanCard';c.id='scanCard';
+      c.innerHTML='<div class="qn">Word '+(i+1)+' · scan</div><div class="prompt" style="margin-bottom:4px">Scan the passage and find this word or phrase. Then <b style="background:none;padding:0">click on it</b> in the passage.</div><div class="target">'+esc(v.word)+'</div><div class="pulse"><i></i>Scanning… (it may appear in a different form)</div><div class="fb"></div>';
+      box.appendChild(c); last=c;
+    }
+  });
+  const rest=list.filter(v=>S.solved[v.id]===undefined && v!==cur).length;
+  if(rest){const w=document.createElement('p');w.className='waiting';w.textContent=rest+' more word'+(rest>1?'s':'')+' to find after this one.';box.appendChild(w);}
+  markFound();
+  if(last && cur) setTimeout(()=>last.scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+let justHL=false;
+function onScanClick(e){
+  if(!scanId||S.phase!=='scaffold'||S.part!==0) return false;
+  const w=e.target.closest('.vw');
+  if(w && w.dataset.w===scanId){
+    initAudio(); sfx.ting(); S.found[scanId]=true; persist(); toast('Found it! Now guess its meaning.');
+    const id=scanId; renderScaffold(); showEv(DATA.vocab.find(v=>v.id===id).ev); return true;
+  }
+  if(!e.target.closest('p')) return false;
+  initAudio(); sfx.wrong(); S.wrongs[scanId+'_scan']=(S.wrongs[scanId+'_scan']||0)+1; persist();
+  const c=$('#scanCard'); if(c){c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');c.querySelector('.fb').innerHTML='<div class="hint">'+ICON.hint+'<div><b>Not this one.</b> Keep scanning — look for the shape of the word.</div></div>';}
+  return true;
+}
+function tableCard(){
+  const T=DATA.table; const c=document.createElement('div'); c.className='card';
+  let h='<table class="cmp"><tr><th></th>'+T.cols.map(x=>'<th>'+x+'</th>').join('')+'</tr>';
+  T.rows.forEach(r=>{h+='<tr><td>'+r.label+'</td>';T.cols.forEach((col,i)=>{const id='tb_'+r.key+'_'+i;h+='<td data-id="'+id+'"><select><option value="">— choose —</option>'+shuffle(r.opts).map(o=>'<option>'+esc(o)+'</option>').join('')+'</select><div class="cx"></div></td>';});h+='</tr>';});
+  h+='</table>'; c.innerHTML=h;
+  c.querySelectorAll('td[data-id]').forEach(td=>{const id=td.dataset.id, sel=td.querySelector('select'), cx=td.querySelector('.cx');
+    const rowKey=id.split('_')[1], col=+id.split('_')[2], row=T.rows.find(r=>r.key===rowKey);
+    const done=val=>{sel.outerHTML='<div class="val">'+esc(val)+'</div>';td.className='ok';const r=reveal(id,val);cx.innerHTML='<div class="cexp">'+esc(r.exp||'')+'</div>';};
+    if(S.solved[id]!==undefined) done(S.solved[id]);
+    sel.onchange=()=>{initAudio();const v=sel.value;if(!v)return;
+      if(isOk(id,v)){S.solved[id]=v;persist();sfx.ting();done(v);showEv(row.ev[col]);updateStepper();}
+      else{S.wrongs[id]=(S.wrongs[id]||0)+1;persist();sfx.wrong();td.className='no';cx.innerHTML='<div class="chint">Not quite. Find the name '+T.cols[col]+' in the passage and read the sentences right after it carefully.</div>';}
+    };});
+  return c;
+}
+function updateStepper(){document.querySelectorAll('.step').forEach((b,i)=>{const ids=PARTS[i].items();const n=ids.filter(id=>S.solved[id]!==undefined).length;b.querySelector('small').textContent=n+'/'+ids.length+' · '+PARTS[i].short;b.querySelector('.bar i').style.width=(n/ids.length*100)+'%';b.classList.toggle('done',n===ids.length);});
+  const p=S.part; if(p<PARTS.length && partDone(p)) setTimeout(()=>{if(S.part!==p)return;sfx.win();toast('Part '+(p+1)+' done! Click "'+(p===PARTS.length-1?'Finish':'Next part')+'" to continue.');},450);
+}
+function scafStats(){const per=PARTS.map(p=>p.items().reduce((a,id)=>a+(S.wrongs[id]||0),0));const scan=DATA.vocab.reduce((a,v)=>a+(S.wrongs[v.id+'_scan']||0),0);return {per,scan,total:per.reduce((a,b)=>a+b,0)};}
+function finishBox(){const st=scafStats();const t=S.scafStart?Math.round((Date.now()-S.scafStart)/1000):0;
+  return '<div class="doneBox"><svg viewBox="0 0 80 80" width="80" height="80"><circle cx="40" cy="40" r="36" fill="#e7f6ec"/><path d="M24 30h32v8a16 16 0 0 1-32 0z" fill="#e9a23b"/><path d="M24 33h-7a7 7 0 0 0 9 9M56 33h7a7 7 0 0 1-9 9" fill="none" stroke="#e9a23b" stroke-width="4"/><rect x="36" y="53" width="8" height="8" fill="#c98a24"/><rect x="28" y="60" width="24" height="6" rx="2" fill="#1d3557"/></svg>'+
+  '<h3>Well done, '+esc(givenName())+'! You have finished Part 1.</h3><p>Now do Questions 27–40 in 25 minutes, just like the real exam.</p>'+
+  '<div><div class="stat"><b>'+st.total+'</b><span>wrong choices</span></div>'+(t?'<div class="stat"><b>'+fmt(t)+'</b><span>time</span></div>':'')+'</div>'+
+  '<button class="btn green" id="goTest">Go to Part 2 · 25-minute test'+ICON.arrow+'</button></div>';}
+function bindFinish(){const b=$('#goTest');if(b)b.onclick=()=>switchPhase('test');}
+function onScaffoldComplete(){
+  sfx.win();
+  if(!S.scafDone){S.scafDone=true;}
+  if(!S.scafSent){
+    const st=scafStats(); const o=outSummary('scaffold');
+    const lab=k=>{const v=DATA.vocab.find(x=>k.startsWith(x.id+'_')||x.id===k);if(k.endsWith('_scan'))return 'tìm từ "'+v.word+'"';if(v&&v.id===k)return 'nghĩa "'+v.word+'"';
+      let m=DATA.main.find(x=>x.id===k);if(m)return 'ý chính '+m.sec;let n=DATA.info.findIndex(x=>x.id===k);if(n>=0)return 'loại TT câu '+(n+1);n=DATA.tfng.findIndex(x=>x.id===k);if(n>=0)return 'TFNG '+(n+1);
+      if(k.startsWith('tb_')){const [,r,c]=k.split('_');return 'bảng '+DATA.table.cols[c]+'/'+r;}return k;};
+    const wrongItems=Object.keys(S.wrongs).filter(k=>S.wrongs[k]>0).map(k=>lab(k)+' ×'+S.wrongs[k]).join(', ');
+    send({type:'scaffold', timeSec:S.scafStart?Math.round((Date.now()-S.scafStart)/1000):0,
+      wrongVocab:st.per[0], wrongMain:st.per[1], wrongInfo:st.per[2], wrongTable:st.per[3], wrongTFNG:st.per[4], wrongTotal:st.total, scanMiss:st.scan,
+      wrongItems, outCount:o.count, outTotalSec:o.total, outList:o.list, solved:S.solved, wrongs:S.wrongs});
+    S.scafSent=true;
+  }
+  persist(); saveSuspend(); refreshTabs();
+}
+
+/* ===================== TEST ===================== */
+let tick=null;
+function renderTestIntro(){
+  const root=$('#test');
+  let hist='';
+  if(S.attempts.length){hist='<div class="hist">Previous attempts: '+S.attempts.map((a,i)=>'<span>Attempt '+(i+1)+': '+a.score+'/'+a.total+'</span>').join('')+'</div>';}
+  root.innerHTML='<div class="doneBox" style="text-align:left"><div style="display:flex;gap:16px;align-items:center"><svg viewBox="0 0 64 64" width="64" height="64"><circle cx="32" cy="35" r="24" fill="#fff" stroke="#1d3557" stroke-width="4"/><path d="M32 22v13l9 6" stroke="#e9a23b" stroke-width="4" fill="none" stroke-linecap="round"/><rect x="26" y="4" width="12" height="6" rx="2" fill="#1d3557"/></svg><div><h3 style="margin:0">Part 2 · 25-minute test</h3><p style="margin:4px 0 0">Questions 27–40 (14 questions)</p></div></div>'+
+  '<ul style="line-height:1.8;color:#3b4652;font-size:15px;margin:16px 0"><li>You have 25 minutes. When time is up, the test is submitted automatically.</li><li>While you work, you will not see whether your answers are right or wrong. You get your score after you submit.</li><li>After submitting, you only see which answers are right or wrong — <b>the correct answers are not shown</b>. Read again and try as many times as you like.</li><li>You can still use the highlighter on the passage.</li></ul>'+hist+
+  '<div style="margin-top:16px"><button class="btn" id="startTest">'+(S.attempts.length?'Start attempt '+(S.attempts.length+1):'Start the test')+ICON.arrow+'</button></div></div>';
+  $('#startTest').onclick=()=>{initAudio();S.cur={start:Date.now(),ans:{}};OUT.log.test=[];persist();renderTestRun();};
+}
+function renderTestRun(){
+  document.body.classList.add('testing'); document.querySelectorAll('.ev.on').forEach(x=>x.classList.remove('on'));
+  refreshTabs();
+  const T=DATA.test; let h='';
+  [T.g1,T.g2].forEach(g=>{
+    h+='<div class="tq"><h3>'+g.title+'</h3><div class="intro">'+g.intro+'</div><table class="grid"><tr><th>Question</th>'+g.letters.map(l=>'<th class="l">'+l+'</th>').join('')+'</tr>';
+    g.qs.forEach(q=>{h+='<tr data-q="'+q[0]+'"><td class="s"><b>'+q[0]+'</b>'+esc(q[1])+'</td>'+g.letters.map(l=>'<td class="l"><button class="rad" data-q="'+q[0]+'" data-l="'+l+'" aria-label="'+q[0]+' '+l+'"></button></td>').join('')+'</tr>';});
+    h+='</table></div>';});
+  h+='<div class="submitBar"><span id="ansCount"></span><button class="btn green" id="submitT">Submit</button></div>';
+  $('#test').innerHTML=h;
+  document.querySelectorAll('.rad').forEach(b=>{b.onclick=()=>{sfx.click();const q=b.dataset.q;S.cur.ans[q]=b.dataset.l;persist();paintAns();};});
+  paintAns();
+  $('#submitT').onclick=()=>{const n=Object.keys(S.cur.ans).length;
+    confirmBox('Submit your test?', n<14?'You have answered '+n+'/14 questions. Blank answers are marked wrong. Do you still want to submit?':'You have answered all 14 questions. Submit to see your score.', ()=>submitTest(false));};
+  $('#timer').classList.remove('hidden'); clearInterval(tick); tick=setInterval(updTimer,500); updTimer();
+  $('#taskWrap').scrollTop=0;
+}
+function paintAns(){document.querySelectorAll('.rad').forEach(b=>b.classList.toggle('sel',S.cur.ans[b.dataset.q]===b.dataset.l));
+  document.querySelectorAll('tr[data-q]').forEach(tr=>tr.classList.toggle('answered',!!S.cur.ans[tr.dataset.q]));
+  const n=Object.keys(S.cur.ans).length; const el=$('#ansCount'); if(el) el.textContent='Answered: '+n+'/14';}
+function left(){return CONFIG.TEST_MINUTES*60 - (Date.now()-S.cur.start)/1000;}
+function updTimer(){if(!S.cur)return;const l=left();$('#tLeft').textContent=fmt(l);$('#timer').classList.toggle('low',l<=300);if(l<=0){submitTest(true);}}
+function submitTest(auto){
+  if(!S.cur) return; clearInterval(tick);
+  const used=Math.min(CONFIG.TEST_MINUTES*60,Math.round((Date.now()-S.cur.start)/1000));
+  const all=[...DATA.test.g1.qs,...DATA.test.g2.qs]; let score=0; const res={};
+  all.forEach(q=>{const a=S.cur.ans[q[0]]||'';const r=!!a&&isOk('q'+q[0],a);res[q[0]]=r;if(r)score++;});
+  const o=outSummary('test');
+  const ansStr=all.map(q=>q[0]+':'+(S.cur.ans[q[0]]||'-')+(res[q[0]]?' ✓':' ✗')).join(' | ');
+  const attemptNo=S.attempts.length+1;
+  send({type:'test', attempt:attemptNo, score, total:all.length, timeSec:used, auto:!!auto, answers:S.cur.ans, results:res, answerStr:ansStr,
+        outCount:o.count, outTotalSec:o.total, outList:o.list, scaffoldDone:S.scafDone});
+  S.attempts.push({score,total:all.length,at:Date.now()});
+  if(S.best==null||score>S.best) S.best=score;
+  const ans=S.cur.ans; S.cur=null; OUT.log.test=[]; persist();
+  LMS.set('cmi.core.score.min',0);LMS.set('cmi.core.score.max',100);LMS.set('cmi.core.score.raw',Math.round(S.best/all.length*100));
+  LMS.set('cmi.core.lesson_status','completed'); saveSuspend();
+  $('#timer').classList.add('hidden'); document.body.classList.remove('testing'); refreshTabs();
+  renderResult(score,all,ans,res,used,auto); sfx.win();
+}
+function renderResult(score,all,ans,res,used,auto){
+  const pct=score/all.length;
+  const msg = pct===1?'Excellent, '+givenName()+'! Everything is correct.' : pct>=.7?'Great work! Read the wrong ones again carefully and try for full marks.' : pct>=.4?'Good start. For each wrong answer, re-read the related section, highlight key words, then try again.' : 'No worries! Review Part 1 (the 3-project table and the types of information), then try the test again.';
+  let h='<div class="res"><div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px"><div><div style="color:#5f6b7a;font-weight:600">Attempt '+S.attempts.length+(auto?' · time up, auto-submitted':'')+' · '+fmt(used)+'</div><div class="big">'+score+'<small> / '+all.length+'</small></div></div><div style="max-width:60%;color:#3b4652;line-height:1.55">'+msg+'</div></div>';
+  h+='<div class="resList">'+all.map(q=>'<div class="resRow '+(res[q[0]]?'r':'w')+'"><span class="n">'+q[0]+'</span><span class="st">'+esc(q[1])+'</span><span class="a">You chose: <b>'+(ans[q[0]]||'—')+'</b></span><span class="ic">'+(res[q[0]]?ICON.ok:ICON.no)+'</span></div>').join('')+'</div>';
+  h+='<p style="color:#5f6b7a;font-size:14px;margin-top:14px">The correct answers are not shown. Go back to the passage and find the evidence for the questions you got wrong.</p>';
+  h+='<div class="hist">Attempts: '+S.attempts.map((a,i)=>'<span>Attempt '+(i+1)+': '+a.score+'/'+a.total+'</span>').join('')+'</div>';
+  h+='<div class="navRow"><button class="btn ghost" id="toScaf">'+ICON.back+'Review Part 1</button><button class="btn" id="retry">Try the test again'+ICON.arrow+'</button></div></div>';
+  $('#test').innerHTML=h; $('#taskWrap').scrollTop=0;
+  $('#retry').onclick=()=>{S.cur={start:Date.now(),ans:{}};OUT.log.test=[];persist();renderTestRun();};
+  $('#toScaf').onclick=()=>switchPhase('scaffold');
+}
+
+/* ===================== PHASE / TABS ===================== */
+function refreshTabs(){
+  const running=!!S.cur;
+  $('#tabT').disabled=!S.scafDone;
+  $('#tabT').innerHTML=(S.scafDone?'':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>')+'Part 2 · 25-minute test';
+  $('#tabS').disabled=running;
+  $('#tabS').classList.toggle('on',S.phase==='scaffold'); $('#tabT').classList.toggle('on',S.phase==='test');
+}
+function switchPhase(p){
+  if(p==='test'&&!S.scafDone){toast('Please finish Part 1 first.');return;}
+  if(p==='scaffold'&&S.cur){toast('You cannot review Part 1 during the test.');return;}
+  closeOut(); S.phase=p;
+  $('#scaffold').classList.toggle('hidden',p!=='scaffold'); $('#test').classList.toggle('hidden',p!=='test');
+  document.querySelectorAll('.ev.on').forEach(x=>x.classList.remove('on'));
+  if(p==='test'){ if(S.cur && left()>0) renderTestRun(); else if(S.cur) submitTest(true); else renderTestIntro(); }
+  else { document.body.classList.remove('testing'); renderScaffold(); }
+  refreshTabs(); $('#taskWrap').scrollTop=0;
+}
+$('#tabS').onclick=()=>switchPhase('scaffold');
+$('#tabT').onclick=()=>switchPhase('test');
+
+function confirmBox(t,txt,yes){$('#cfTitle').textContent=t;$('#cfText').textContent=txt;$('#confirmOv').classList.remove('hidden');
+  $('#cfNo').onclick=()=>$('#confirmOv').classList.add('hidden');
+  $('#cfYes').onclick=()=>{$('#confirmOv').classList.add('hidden');yes();};}
+
+/* ===================== START ===================== */
+(function(){
+  const saved=store.get('who',null);
+  $('#inName').value = lmsName() || (saved&&saved.name) || '';
+  $('#inClass').value = (saved&&saved.cls) || '';
+})();
+$('#startBtn').onclick=()=>{
+  const n=$('#inName').value.trim(), c=$('#inClass').value.trim();
+  if(!n||!c){$('#startErr').textContent='Please enter your full name and class.';return;}
+  S.name=n; S.cls=c; store.set('who',{name:n,cls:c});
+  initAudio(); if(fsSupported()) goFS();
+  if(!S.scafStart){S.scafStart=Date.now();}
+  persist();
+  $('#startOv').classList.add('hidden');
+  $('#who').textContent=n+' · '+c;
+  OUT.active=true;
+  if(S.cur) switchPhase('test'); else switchPhase(S.scafDone && S.part===PARTS.length ? 'test' : 'scaffold');
+  setTimeout(checkOut,800);
+};
+window.addEventListener('beforeunload',()=>{saveSuspend();LMS.finish();});
+renderScaffold(); refreshTabs();
+</script>
+</body>
+</html>
